@@ -43,8 +43,8 @@ export default function Home() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-6 py-10">
-      <div className="flex flex-col gap-6">
+    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 px-6 py-4">
+      <div className="flex flex-col gap-3">
         <header className="flex items-center justify-between gap-4">
           <span className="font-display text-lg font-semibold">
             ATS <span className="text-primary">Flash</span>
@@ -57,7 +57,7 @@ export default function Home() {
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
             Results in seconds, not minutes
           </span>
-          <h1 className="font-display text-4xl font-semibold tracking-tight text-balance">
+          <h1 className="font-display text-3xl font-semibold tracking-tight text-balance">
             Is your resume <span className="text-primary">ATS-ready?</span>
           </h1>
           <p className="max-w-md text-muted-foreground">
@@ -66,8 +66,8 @@ export default function Home() {
         </section>
       </div>
 
-      <section className="grid gap-6 md:grid-cols-2">
-        <div className="flex flex-col gap-4">
+      <section className="grid gap-5 md:grid-cols-2">
+        <div className="flex flex-col gap-3">
           <UploadZone file={file} onFileSelected={setFile} disabled={loading} />
 
           <div>
@@ -79,7 +79,7 @@ export default function Home() {
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
               disabled={loading}
-              rows={6}
+              rows={4}
               placeholder="Paste the job description here to also see a keyword match score…"
               className="glass w-full resize-none rounded-lg border border-card-border p-3 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-ring/20"
             />
@@ -98,7 +98,7 @@ export default function Home() {
           {error && <p className="text-sm text-red-500">{error}</p>}
         </div>
 
-        <div className="glass shadow-tinted-lg flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-card-border p-6">
+        <div className="glass shadow-tinted-lg flex min-h-[200px] flex-col items-center justify-center rounded-2xl border border-card-border p-5">
           {result ? (
             <div className="animate-fade-in-up flex flex-col items-center gap-3">
               <ScoreRing score={result.overallScore} grade={result.grade} />
@@ -159,7 +159,7 @@ export default function Home() {
         </section>
       )}
 
-      <footer className="mt-auto flex items-center justify-center gap-1.5 pt-8 text-center text-xs text-muted-foreground/70">
+      <footer className="mt-auto flex items-center justify-center gap-1.5 pt-4 text-center text-xs text-muted-foreground/70">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="11" width="18" height="10" rx="2" stroke="currentColor" strokeWidth="1.8" />
           <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" strokeWidth="1.8" />

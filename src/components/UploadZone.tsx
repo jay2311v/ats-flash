@@ -35,7 +35,7 @@ export function UploadZone({ file, onFileSelected, disabled }: UploadZoneProps) 
         if (!disabled) handleFiles(e.dataTransfer.files);
       }}
       onClick={() => !disabled && inputRef.current?.click()}
-      className={`glass flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-10 text-center transition-all
+      className={`glass flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-6 text-center transition-all
         ${isDragging ? "border-primary glow scale-[1.01]" : "border-card-border hover:border-primary/40"}
         ${disabled ? "pointer-events-none opacity-60" : ""}`}
     >
