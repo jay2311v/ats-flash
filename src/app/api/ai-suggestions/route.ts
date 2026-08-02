@@ -116,8 +116,9 @@ async function getNvidiaSuggestions(apiKey: string, prompt: string): Promise<str
 }
 
 export async function POST(request: Request) {
-  const { allowed, retryAfterSeconds } = checkRateLimit(
-    `ai-suggestions:${getClientIp(request)}`,
+  const { allowed, retryAfterSeconds } = await checkRateLimit(
+    "ai-suggestions",
+    getClientIp(request),
     RATE_LIMIT,
     RATE_LIMIT_WINDOW_MS
   );

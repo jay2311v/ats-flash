@@ -23,8 +23,9 @@ function countWords(text: string): number {
 export async function POST(request: Request) {
   const startedAt = Date.now();
 
-  const { allowed, retryAfterSeconds } = checkRateLimit(
-    `analyze:${getClientIp(request)}`,
+  const { allowed, retryAfterSeconds } = await checkRateLimit(
+    "analyze",
+    getClientIp(request),
     RATE_LIMIT,
     RATE_LIMIT_WINDOW_MS
   );
