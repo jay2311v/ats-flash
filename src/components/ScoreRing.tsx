@@ -21,14 +21,14 @@ export function ScoreRing({ score, grade, size = 160 }: ScoreRingProps) {
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <div className="relative" style={{ width: size, height: size }}>
+      <div className="clay-well relative rounded-full bg-muted" style={{ width: size, height: size }}>
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
           <circle
             cx={size / 2}
             cy={size / 2}
             r={radius}
             strokeWidth={stroke}
-            className="stroke-muted"
+            stroke="transparent"
             fill="none"
           />
           <circle
@@ -54,10 +54,7 @@ export function ScoreRing({ score, grade, size = 160 }: ScoreRingProps) {
           <span className="text-xs text-muted-foreground">/ 100</span>
         </div>
       </div>
-      <span
-        className="rounded-full px-3 py-1 text-sm font-medium"
-        style={{ backgroundColor: `${color}1a`, color }}
-      >
+      <span className="clay-sm rounded-full bg-card px-3 py-1 text-sm font-medium" style={{ color }}>
         {grade}
       </span>
     </div>

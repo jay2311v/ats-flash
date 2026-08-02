@@ -27,19 +27,18 @@ export function AtsScanSequence() {
 
   return (
     <div className="flex w-full max-w-[260px] flex-col items-center gap-4" role="status" aria-live="polite">
-      <div className="relative h-16 w-16">
-        <div className="absolute inset-0 rounded-full glow" />
-        <div className="absolute inset-0 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
+      <div className="clay-well relative h-16 w-16 rounded-full bg-muted">
+        <div className="absolute inset-1.5 animate-spin rounded-full border-2 border-transparent border-t-primary" />
       </div>
       <div className="text-center">
         <p className="text-xs font-medium text-primary">Matching against {CHECKS.length} ATS parsing checks</p>
         <p className="mt-1 text-sm text-muted-foreground">{CHECKS[index]}…</p>
       </div>
-      <div className="flex gap-1">
+      <div className="clay-well-sm flex gap-1 rounded-full bg-muted p-1">
         {CHECKS.map((_, i) => (
           <span
             key={i}
-            className={`h-1 w-4 rounded-full transition-colors duration-300 ${i <= index ? "bg-primary" : "bg-muted"}`}
+            className={`h-1 w-4 rounded-full transition-colors duration-300 ${i <= index ? "bg-primary" : "bg-transparent"}`}
           />
         ))}
       </div>

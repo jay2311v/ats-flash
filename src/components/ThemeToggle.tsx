@@ -83,7 +83,7 @@ export function ThemeToggle() {
   }, [theme]);
 
   return (
-    <div className="glass inline-flex min-h-[34px] items-center rounded-full border border-card-border p-0.5 shadow-tinted">
+    <div className="clay-well-sm inline-flex min-h-[34px] items-center gap-0.5 rounded-full bg-muted p-1">
       {theme !== null &&
         OPTIONS.map(({ value, label, Icon }) => (
           <button
@@ -92,10 +92,10 @@ export function ThemeToggle() {
             onClick={() => selectTheme(value)}
             aria-label={`${label} theme`}
             aria-pressed={theme === value}
-            className={`flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm transition-colors ${
+            className={`flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm ${
               theme === value
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                ? "clay-sm bg-card text-primary"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <Icon />
