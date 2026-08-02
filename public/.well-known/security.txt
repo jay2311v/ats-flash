@@ -1,0 +1,4 @@
+Contact: mailto:jayvaja53@gmail.com
+Expires: 2027-08-02T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://www.atsflash.tech/.well-known/security.txt

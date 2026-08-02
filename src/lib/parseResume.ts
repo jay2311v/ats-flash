@@ -1,9 +1,5 @@
 import mammoth from "mammoth";
-
-export const ACCEPTED_EXTENSIONS = ["pdf", "docx"] as const;
-export type AcceptedExtension = (typeof ACCEPTED_EXTENSIONS)[number];
-
-export const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5MB
+import type { AcceptedExtension } from "@/lib/constants";
 
 export class UnsupportedFileError extends Error {}
 
