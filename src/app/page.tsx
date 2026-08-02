@@ -9,6 +9,9 @@ import { JobMatchCard } from "@/components/JobMatchCard";
 import { AiSuggestions } from "@/components/AiSuggestions";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import type { AnalysisResult } from "@/lib/types";
+import { MAX_FILE_BYTES } from "@/lib/constants";
+
+const MAX_FILE_MB = MAX_FILE_BYTES / (1024 * 1024);
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
@@ -29,11 +32,28 @@ export default function Home() {
 
     try {
       const res = await fetch("/api/analyze", { method: "POST", body: formData });
-      const data = await res.json();
+
+      // Vercel's own platform-level function body size cap (~4.5MB, below
+      // our app's own MAX_FILE_BYTES check) rejects oversized requests
+      // before they reach this route at all, with a raw plain-text body —
+      // handle that case by status code before assuming a JSON response.
+      if (res.status === 413) {
+        setError(`That file is too large for the server to accept (max ${MAX_FILE_MB}MB).`);
+        return;
+      }
+
+      let data: { error?: string } & Partial<AnalysisResult>;
+      try {
+        data = await res.json();
+      } catch {
+        setError("Something went wrong while analyzing your resume. Please try again.");
+        return;
+      }
+
       if (!res.ok) {
         setError(data.error ?? "Something went wrong while analyzing your resume.");
       } else {
-        setResult(data);
+        setResult(data as AnalysisResult);
       }
     } catch {
       setError("Could not reach the analysis service. Please try again.");

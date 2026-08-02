@@ -1,15 +1,19 @@
 import { NextResponse } from "next/server";
-import {
-  ACCEPTED_EXTENSIONS,
-  MAX_FILE_BYTES,
-  extensionFromFileName,
-  extractText,
-} from "@/lib/parseResume";
+import { ACCEPTED_EXTENSIONS, MAX_FILE_BYTES } from "@/lib/constants";
+import { extensionFromFileName, extractText } from "@/lib/parseResume";
 import { collectTopSuggestions, scoreResumeText } from "@/lib/scoring";
 import { matchKeywordsToResume } from "@/lib/keywords";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import type { AnalysisResult } from "@/lib/types";
 
 export const runtime = "nodejs";
+
+// Parsing a resume is cheap compared to the AI suggestions call, but a
+// large PDF/DOCX still costs real CPU time — cap it generously enough for
+// legitimate iterative use (trying a few resumes/job descriptions) while
+// blocking a flood.
+const RATE_LIMIT = 20;
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
 
 function countWords(text: string): number {
   const matches = text.trim().match(/\S+/g);
@@ -18,6 +22,18 @@ function countWords(text: string): number {
 
 export async function POST(request: Request) {
   const startedAt = Date.now();
+
+  const { allowed, retryAfterSeconds } = checkRateLimit(
+    `analyze:${getClientIp(request)}`,
+    RATE_LIMIT,
+    RATE_LIMIT_WINDOW_MS
+  );
+  if (!allowed) {
+    return NextResponse.json(
+      { error: `Too many requests. Please try again in ${retryAfterSeconds}s.` },
+      { status: 429, headers: { "Retry-After": String(retryAfterSeconds) } }
+    );
+  }
 
   let formData: FormData;
   try {

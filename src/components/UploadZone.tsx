@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { ACCEPTED_EXTENSIONS, MAX_FILE_BYTES } from "@/lib/constants";
 
 interface UploadZoneProps {
   file: File | null;
@@ -8,7 +9,8 @@ interface UploadZoneProps {
   disabled?: boolean;
 }
 
-const ACCEPTED = ".pdf,.docx";
+const ACCEPTED = ACCEPTED_EXTENSIONS.map((ext) => `.${ext}`).join(",");
+const MAX_FILE_MB = MAX_FILE_BYTES / (1024 * 1024);
 
 export function UploadZone({ file, onFileSelected, disabled }: UploadZoneProps) {
   const [isDragging, setIsDragging] = useState(false);
@@ -24,6 +26,14 @@ export function UploadZone({ file, onFileSelected, disabled }: UploadZoneProps) 
 
   return (
     <div
+      role="button"
+      tabIndex={disabled ? -1 : 0}
+      aria-disabled={disabled}
+      aria-label={
+        file
+          ? `Selected file ${file.name}. Press Enter to choose a different file.`
+          : `Upload resume. ${ACCEPTED_EXTENSIONS.join(" or ").toUpperCase()}, up to ${MAX_FILE_MB}MB.`
+      }
       onDragOver={(e) => {
         e.preventDefault();
         if (!disabled) setIsDragging(true);
@@ -35,6 +45,13 @@ export function UploadZone({ file, onFileSelected, disabled }: UploadZoneProps) 
         if (!disabled) handleFiles(e.dataTransfer.files);
       }}
       onClick={() => !disabled && inputRef.current?.click()}
+      onKeyDown={(e) => {
+        if (disabled) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          inputRef.current?.click();
+        }
+      }}
       className={`clay-well flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[28px] bg-muted p-6 text-center transition-all
         ${isDragging ? "ring-2 ring-primary/50 scale-[1.01]" : ""}
         ${disabled ? "pointer-events-none opacity-60" : ""}`}
@@ -42,6 +59,7 @@ export function UploadZone({ file, onFileSelected, disabled }: UploadZoneProps) 
       <input
         ref={inputRef}
         type="file"
+        tabIndex={-1}
         accept={ACCEPTED}
         className="hidden"
         disabled={disabled}
@@ -61,7 +79,7 @@ export function UploadZone({ file, onFileSelected, disabled }: UploadZoneProps) 
       ) : (
         <>
           <p className="font-medium">Drop your resume here, or click to browse</p>
-          <p className="text-sm text-muted-foreground">PDF or DOCX, up to 5MB</p>
+          <p className="text-sm text-muted-foreground">PDF or DOCX, up to {MAX_FILE_MB}MB</p>
         </>
       )}
     </div>

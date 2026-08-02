@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
+
+// This route makes a real, billed LLM call per request — keep this tight.
+// A visitor legitimately clicks "Get AI Suggestions" once or twice per
+// analysis; this still allows retries without leaving the door open to a
+// scripted loop burning through the API budget.
+const RATE_LIMIT = 5;
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
 
 interface RequestBody {
   resumeText?: string;
@@ -108,6 +116,18 @@ async function getNvidiaSuggestions(apiKey: string, prompt: string): Promise<str
 }
 
 export async function POST(request: Request) {
+  const { allowed, retryAfterSeconds } = checkRateLimit(
+    `ai-suggestions:${getClientIp(request)}`,
+    RATE_LIMIT,
+    RATE_LIMIT_WINDOW_MS
+  );
+  if (!allowed) {
+    return NextResponse.json(
+      { error: `Too many requests. Please try again in ${retryAfterSeconds}s.` },
+      { status: 429, headers: { "Retry-After": String(retryAfterSeconds) } }
+    );
+  }
+
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const nvidiaKey = process.env.NVIDIA_API_KEY;
 
