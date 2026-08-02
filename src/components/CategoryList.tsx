@@ -37,7 +37,7 @@ function CategoryRow({ category }: { category: CategoryResult }) {
   const ratio = category.maxScore > 0 ? category.score / category.maxScore : 0;
 
   return (
-    <div className="glass rounded-lg border border-card-border transition-colors hover:border-primary/25">
+    <div className="clay rounded-2xl bg-card">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -55,7 +55,7 @@ function CategoryRow({ category }: { category: CategoryResult }) {
           <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
-      <div className="mx-3 mb-3 h-1.5 overflow-hidden rounded-full bg-muted">
+      <div className="clay-well-sm mx-3 mb-3 h-1.5 overflow-hidden rounded-full bg-muted">
         <div className={`h-full rounded-full transition-[width] duration-500 ${barColor(ratio)}`} style={{ width: `${ratio * 100}%` }} />
       </div>
       {open && (

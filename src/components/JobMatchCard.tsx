@@ -2,12 +2,12 @@ import type { JobMatchResult } from "@/lib/types";
 
 export function JobMatchCard({ jobMatch }: { jobMatch: JobMatchResult }) {
   return (
-    <div className="glass animate-fade-in-up rounded-2xl border border-card-border p-4 shadow-tinted">
+    <div className="clay animate-fade-in-up rounded-2xl bg-card p-4">
       <div className="flex items-center justify-between">
         <h3 className="font-medium">Job Description Match</h3>
         <span className="font-display text-lg font-semibold tabular-nums text-primary">{jobMatch.score}%</span>
       </div>
-      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
+      <div className="clay-well-sm mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
         <div
           className="h-full rounded-full bg-primary transition-[width] duration-500"
           style={{ width: `${jobMatch.score}%` }}

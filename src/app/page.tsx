@@ -53,7 +53,7 @@ export default function Home() {
         </header>
 
         <section className="flex flex-col gap-2">
-          <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+          <span className="clay-sm inline-flex w-fit items-center gap-1.5 rounded-full bg-card px-2.5 py-1 text-xs font-medium text-primary">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
             Results in seconds, not minutes
           </span>
@@ -81,7 +81,7 @@ export default function Home() {
               disabled={loading}
               rows={4}
               placeholder="Paste the job description here to also see a keyword match score…"
-              className="glass w-full resize-none rounded-lg border border-card-border p-3 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-ring/20"
+              className="clay-well w-full resize-none rounded-2xl bg-muted p-3 text-sm outline-none focus:ring-2 focus:ring-ring/40"
             />
           </div>
 
@@ -89,16 +89,15 @@ export default function Home() {
             type="button"
             onClick={handleAnalyze}
             disabled={!file || loading}
-            className="group relative cursor-pointer overflow-hidden rounded-lg bg-primary px-4 py-3 font-medium text-primary-foreground transition-all glow hover:bg-primary-hover hover:glow-strong active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100"
+            className="clay-primary cursor-pointer rounded-2xl bg-primary px-4 py-3 font-medium text-primary-foreground hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <span className="pointer-events-none absolute inset-0 -translate-x-full bg-white/25 transition-transform duration-500 group-hover:translate-x-full" />
-            <span className="relative">{loading ? "Analyzing…" : "Check My ATS Score"}</span>
+            {loading ? "Analyzing…" : "Check My ATS Score"}
           </button>
 
           {error && <p className="text-sm text-red-500">{error}</p>}
         </div>
 
-        <div className="glass shadow-tinted-lg flex min-h-[200px] flex-col items-center justify-center rounded-2xl border border-card-border p-5">
+        <div className="clay-lg flex min-h-[200px] flex-col items-center justify-center rounded-[28px] bg-card p-5">
           {result ? (
             <div className="animate-fade-in-up flex flex-col items-center gap-3">
               <ScoreRing score={result.overallScore} grade={result.grade} />
@@ -132,7 +131,7 @@ export default function Home() {
                 result.topSuggestions.map((s, i) => (
                   <li
                     key={i}
-                    className="glass animate-fade-in-up flex gap-2 rounded-lg border border-card-border p-3 text-sm transition-colors hover:border-primary/30"
+                    className="clay animate-fade-in-up flex gap-2 rounded-2xl bg-card p-3 text-sm"
                     style={{ animationDelay: `${i * 40}ms` }}
                   >
                     <span className="font-medium text-primary">{i + 1}.</span>

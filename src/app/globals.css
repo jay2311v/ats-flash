@@ -3,41 +3,46 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #f7faf9;
-  --foreground: #0f1d1b;
-  --card: rgba(255, 255, 255, 0.7);
-  --card-foreground: #0f1d1b;
-  --card-border: rgba(15, 29, 27, 0.08);
-  --primary: #0d9488;
-  --primary-hover: #0f766e;
+  --background: #eef7f2;
+  --foreground: #1c352f;
+  --card: #fdfffe;
+  --card-foreground: #1c352f;
+  --primary: #0a7d72;
+  --primary-hover: #0d9488;
   --primary-foreground: #ffffff;
-  --muted: rgba(15, 29, 27, 0.05);
-  --muted-foreground: #5b6b68;
-  --border: rgba(15, 29, 27, 0.1);
-  --ring: #0d9488;
-  --shadow-color: 166 40% 25%;
-  --glow: 0 0 12px rgba(13, 148, 136, 0.18);
-  --glow-strong: 0 0 20px rgba(13, 148, 136, 0.3);
-  --ambient: #0d9488;
+  --primary-border: #075c53;
+  --muted: #dcefe7;
+  --muted-foreground: #4b6b63;
+  --border: #bfe3d8;
+  --ring: #0a7d72;
+
+  /* Clay surface language: an opaque outline, a flat offset drop shadow (no
+     blur-heavy dual-tone like neumorphism), and a crisp inset sheen along the
+     top edge to read as a glossy, squeezable lump of clay. */
+  --clay-shadow: rgba(20, 53, 47, 0.16);
+  --clay-shadow-primary: rgba(5, 51, 46, 0.4);
+  --clay-highlight: rgba(255, 255, 255, 0.9);
+  --clay-highlight-primary: rgba(255, 255, 255, 0.35);
 }
 
 .dark {
-  --background: #0a0f0e;
-  --foreground: #e7efec;
-  --card: rgba(255, 255, 255, 0.04);
-  --card-foreground: #e7efec;
-  --card-border: rgba(255, 255, 255, 0.09);
+  --background: #14231e;
+  --foreground: #e7f3ef;
+  --card: #1d2f29;
+  --card-foreground: #e7f3ef;
   --primary: #2dd4bf;
   --primary-hover: #5eead4;
   --primary-foreground: #042420;
-  --muted: rgba(255, 255, 255, 0.05);
-  --muted-foreground: #8fa39d;
-  --border: rgba(255, 255, 255, 0.1);
+  --primary-border: #7fe9da;
+  --muted: #16221d;
+  --muted-foreground: #93b0a8;
+  --border: #2d4941;
   --ring: #2dd4bf;
-  --shadow-color: 166 80% 3%;
-  --glow: 0 0 14px rgba(45, 212, 191, 0.25);
-  --glow-strong: 0 0 24px rgba(45, 212, 191, 0.38);
-  --ambient: #2dd4bf;
+
+  --clay-shadow: rgba(0, 0, 0, 0.55);
+  --clay-shadow-primary: rgba(0, 0, 0, 0.6);
+  --clay-highlight: rgba(255, 255, 255, 0.06);
+  --clay-highlight-primary: rgba(255, 255, 255, 0.08);
 }
 
 @theme inline {
@@ -51,10 +56,9 @@
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
-  --color-card-border: var(--card-border);
   --color-ring: var(--ring);
   --font-sans: var(--font-geist-sans);
-  --font-display: var(--font-outfit);
+  --font-display: var(--font-baloo);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -63,53 +67,61 @@ body {
   color: var(--foreground);
 }
 
-/* A single soft, static tint in the top corner — just enough for the glass
-   panels to have something to catch, without turning the page into a
-   light show. */
-.ambient-background {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.ambient-background::before {
-  content: "";
-  position: absolute;
-  width: 60vw;
-  height: 60vw;
-  top: -30%;
-  left: 50%;
-  transform: translateX(-50%);
-  border-radius: 9999px;
-  background: var(--ambient);
-  filter: blur(120px);
-  opacity: 0.08;
-}
-
-.dark .ambient-background::before {
-  opacity: 0.1;
-}
-
 @layer utilities {
-  .shadow-tinted {
-    box-shadow: 0 1px 2px hsl(var(--shadow-color) / 0.06), 0 8px 24px -8px hsl(var(--shadow-color) / 0.18);
+  /* Raised clay lumps — cards, buttons, badges. Each sets its own complete
+     border + box-shadow so combining two shape classes on one element can
+     never turn into a cascade fight; pair with bg-card/bg-primary/etc. */
+  .clay {
+    border: 3px solid var(--border);
+    box-shadow: 0 6px 0 var(--clay-shadow), inset 0 2px 0 var(--clay-highlight);
+    transition: transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 150ms ease;
   }
-  .shadow-tinted-lg {
-    box-shadow: 0 2px 4px hsl(var(--shadow-color) / 0.08), 0 16px 40px -12px hsl(var(--shadow-color) / 0.25);
+  .clay:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 var(--clay-shadow), inset 0 2px 0 var(--clay-highlight);
   }
 
-  .glass {
-    background: var(--card);
-    backdrop-filter: blur(16px) saturate(140%);
+  .clay-lg {
+    border: 4px solid var(--border);
+    box-shadow: 0 9px 0 var(--clay-shadow), inset 0 3px 0 var(--clay-highlight);
+    transition: transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 150ms ease;
+  }
+  .clay-lg:active:not(:disabled) {
+    transform: translateY(5px);
+    box-shadow: 0 2px 0 var(--clay-shadow), inset 0 3px 0 var(--clay-highlight);
   }
 
-  .glow {
-    box-shadow: var(--glow);
+  /* Low-relief version for small chips/pills/icon circles. */
+  .clay-sm {
+    border: 2px solid var(--border);
+    box-shadow: 0 3px 0 var(--clay-shadow);
+    transition: transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 150ms ease;
   }
-  .glow-strong {
-    box-shadow: var(--glow-strong);
+  .clay-sm:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 var(--clay-shadow);
+  }
+
+  /* Same shape language, but colored to match the primary teal instead of
+     the neutral border/shadow — for the primary CTA and its clay lump. */
+  .clay-primary {
+    border: 3px solid var(--primary-border);
+    box-shadow: 0 6px 0 var(--clay-shadow-primary), inset 0 2px 0 var(--clay-highlight-primary);
+    transition: transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 150ms ease;
+  }
+  .clay-primary:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 var(--clay-shadow-primary), inset 0 2px 0 var(--clay-highlight-primary);
+  }
+
+  /* Carved-in wells — inputs, progress tracks, dropzones. */
+  .clay-well {
+    border: 3px solid var(--border);
+    box-shadow: inset 0 3px 6px var(--clay-shadow), inset 0 -1px 0 var(--clay-highlight);
+  }
+  .clay-well-sm {
+    border: 2px solid var(--border);
+    box-shadow: inset 0 2px 4px var(--clay-shadow);
   }
 }
 
@@ -131,5 +143,11 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in-up {
     animation: none;
+  }
+  .clay,
+  .clay-lg,
+  .clay-sm,
+  .clay-primary {
+    transition: none;
   }
 }

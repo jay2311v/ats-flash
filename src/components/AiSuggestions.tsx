@@ -40,10 +40,10 @@ export function AiSuggestions({ resumeText, jobDescription, overallScore, topSug
   }
 
   return (
-    <div className="glass animate-fade-in-up rounded-2xl border border-card-border p-4 shadow-tinted">
+    <div className="clay animate-fade-in-up rounded-2xl bg-card p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <div className="clay-sm flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-card text-primary">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
             </svg>
@@ -58,7 +58,7 @@ export function AiSuggestions({ resumeText, jobDescription, overallScore, topSug
             type="button"
             onClick={fetchSuggestions}
             disabled={loading}
-            className="shrink-0 cursor-pointer rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-all glow hover:bg-primary-hover hover:glow-strong active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100"
+            className="clay-primary shrink-0 cursor-pointer rounded-xl bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? "Thinking…" : "Get AI Suggestions"}
           </button>
@@ -67,7 +67,7 @@ export function AiSuggestions({ resumeText, jobDescription, overallScore, topSug
 
       {notConfigured && (
         <p className="mt-3 text-sm text-muted-foreground">
-          AI suggestions aren&apos;t enabled on this server. Set an <code className="rounded bg-muted px-1">ANTHROPIC_API_KEY</code> or <code className="rounded bg-muted px-1">NVIDIA_API_KEY</code> environment variable to turn this on.
+          AI suggestions aren&apos;t enabled on this server. Set an <code className="clay-well-sm rounded-md bg-muted px-1">ANTHROPIC_API_KEY</code> or <code className="clay-well-sm rounded-md bg-muted px-1">NVIDIA_API_KEY</code> environment variable to turn this on.
         </p>
       )}
 
@@ -78,7 +78,7 @@ export function AiSuggestions({ resumeText, jobDescription, overallScore, topSug
           {suggestions.map((s, i) => (
             <li
               key={i}
-              className="animate-fade-in-up flex gap-2 rounded-lg bg-muted p-2.5 text-sm"
+              className="clay-well-sm animate-fade-in-up flex gap-2 rounded-xl bg-muted p-2.5 text-sm"
               style={{ animationDelay: `${i * 40}ms` }}
             >
               <span className="font-medium text-primary">{i + 1}.</span>

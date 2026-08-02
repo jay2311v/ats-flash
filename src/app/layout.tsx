@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Outfit } from "next/font/google";
+import { Geist, Geist_Mono, Baloo_2 } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
@@ -14,10 +14,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const outfit = Outfit({
-  variable: "--font-outfit",
+const baloo = Baloo_2({
+  variable: "--font-baloo",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${baloo.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
@@ -41,12 +41,7 @@ export default function RootLayout({
           {THEME_INIT_SCRIPT}
         </Script>
       </head>
-      <body className="min-h-full flex flex-col">
-        <div className="ambient-background" aria-hidden="true">
-          <span />
-        </div>
-        {children}
-      </body>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }

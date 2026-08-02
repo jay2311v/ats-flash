@@ -35,8 +35,8 @@ export function UploadZone({ file, onFileSelected, disabled }: UploadZoneProps) 
         if (!disabled) handleFiles(e.dataTransfer.files);
       }}
       onClick={() => !disabled && inputRef.current?.click()}
-      className={`glass flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-6 text-center transition-all
-        ${isDragging ? "border-primary glow scale-[1.01]" : "border-card-border hover:border-primary/40"}
+      className={`clay-well flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[28px] bg-muted p-6 text-center transition-all
+        ${isDragging ? "ring-2 ring-primary/50 scale-[1.01]" : ""}
         ${disabled ? "pointer-events-none opacity-60" : ""}`}
     >
       <input
@@ -47,7 +47,7 @@ export function UploadZone({ file, onFileSelected, disabled }: UploadZoneProps) 
         disabled={disabled}
         onChange={(e) => handleFiles(e.target.files)}
       />
-      <div className={`mb-1 flex h-11 w-11 items-center justify-center rounded-full transition-colors ${isDragging ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
+      <div className={`clay-sm mb-1 flex h-11 w-11 items-center justify-center rounded-full bg-card transition-colors ${isDragging ? "text-primary" : "text-muted-foreground"}`}>
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
           <path d="M12 16V4M12 4l-4 4M12 4l4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
