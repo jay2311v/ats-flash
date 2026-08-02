@@ -50,7 +50,7 @@ export function AiSuggestions({ resumeText, jobDescription, overallScore, topSug
           </div>
           <div>
             <h3 className="font-medium">10 AI-Powered Suggestions</h3>
-            <p className="text-sm text-muted-foreground">Deeper, context-aware feedback (takes a few extra seconds).</p>
+            <p className="text-sm text-muted-foreground">Deeper, context-aware feedback.</p>
           </div>
         </div>
         {!suggestions && (

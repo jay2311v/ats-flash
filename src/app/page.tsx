@@ -44,21 +44,27 @@ export default function Home() {
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-6 py-10">
-      <header className="flex items-start justify-between gap-4">
-        <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-6">
+        <header className="flex items-center justify-between gap-4">
+          <span className="font-display text-lg font-semibold">
+            ATS <span className="text-primary">Flash</span>
+          </span>
+          <ThemeToggle />
+        </header>
+
+        <section className="flex flex-col gap-2">
           <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
             Results in seconds, not minutes
           </span>
           <h1 className="font-display text-4xl font-semibold tracking-tight text-balance">
-            ATS <span className="text-primary">Flash</span>
+            Is your resume <span className="text-primary">ATS-ready?</span>
           </h1>
           <p className="max-w-md text-muted-foreground">
             Upload your resume for an instant ATS score, category breakdown, and concrete suggestions to improve it.
           </p>
-        </div>
-        <ThemeToggle />
-      </header>
+        </section>
+      </div>
 
       <section className="grid gap-6 md:grid-cols-2">
         <div className="flex flex-col gap-4">
