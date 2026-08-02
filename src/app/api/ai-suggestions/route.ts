@@ -52,7 +52,22 @@ function parseSuggestions(raw: string): string[] {
     }
   }
 
-  return cleaned.split("\n").map((l) => l.trim()).filter(Boolean);
+  // The model didn't return valid JSON (e.g. an unescaped quote inside an
+  // example broke the array) — fall back to a line-based parse that strips
+  // JSON array punctuation instead of surfacing it as literal suggestions.
+  return cleaned
+    .split("\n")
+    .map((line) =>
+      line
+        .trim()
+        .replace(/,\s*$/, "")
+        .replace(/^-\s*/, "")
+        .replace(/^\d+[.)]\s*/, "")
+        .replace(/"+$/, "")
+        .replace(/^"+/, "")
+        .trim()
+    )
+    .filter((line) => line.length > 0 && line !== "[" && line !== "]");
 }
 
 async function getAnthropicSuggestions(apiKey: string, prompt: string): Promise<string[]> {
