@@ -1,17 +1,33 @@
-// Best-effort, in-memory rate limiting. Each warm serverless instance keeps
-// its own counters — they reset on cold start and aren't shared across
-// regions or instances — so this raises the bar against a naive scripted
-// abuse loop without being a hard global guarantee. (Chosen over a
-// Redis-backed limiter to avoid a new external dependency/account.)
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
+const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+const redis = redisUrl && redisToken ? new Redis({ url: redisUrl, token: redisToken }) : null;
+
+const limiters = new Map<string, Ratelimit>();
+
+function getLimiter(client: Redis, name: string, limit: number, windowMs: number): Ratelimit {
+  let limiter = limiters.get(name);
+  if (!limiter) {
+    limiter = new Ratelimit({
+      redis: client,
+      limiter: Ratelimit.slidingWindow(limit, `${windowMs} ms`),
+      prefix: `ats-flash:${name}`,
+      analytics: false,
+    });
+    limiters.set(name, limiter);
+  }
+  return limiter;
+}
+
+// --- In-memory fallback (best-effort only — see caveats above) ---
 interface Bucket {
   count: number;
   resetAt: number;
 }
 
 const buckets = new Map<string, Bucket>();
-
-// Opportunistic cleanup so a long-lived warm instance doesn't accumulate an
-// unbounded number of one-off visitor entries.
 const MAX_TRACKED_KEYS = 5000;
 
 function sweepExpired(now: number) {
@@ -20,12 +36,7 @@ function sweepExpired(now: number) {
   }
 }
 
-export interface RateLimitResult {
-  allowed: boolean;
-  retryAfterSeconds: number;
-}
-
-export function checkRateLimit(key: string, limit: number, windowMs: number): RateLimitResult {
+function checkInMemory(key: string, limit: number, windowMs: number): RateLimitResult {
   const now = Date.now();
   if (buckets.size > MAX_TRACKED_KEYS) sweepExpired(now);
 
@@ -41,6 +52,34 @@ export function checkRateLimit(key: string, limit: number, windowMs: number): Ra
 
   bucket.count += 1;
   return { allowed: true, retryAfterSeconds: 0 };
+}
+
+export interface RateLimitResult {
+  allowed: boolean;
+  retryAfterSeconds: number;
+}
+
+/**
+ * @param name Identifies the route/bucket (e.g. "analyze") — groups requests
+ *   under the same limit/window and namespaces Redis keys.
+ * @param identifier The per-caller key, typically the client IP.
+ */
+export async function checkRateLimit(
+  name: string,
+  identifier: string,
+  limit: number,
+  windowMs: number
+): Promise<RateLimitResult> {
+  if (redis) {
+    const limiter = getLimiter(redis, name, limit, windowMs);
+    const { success, reset } = await limiter.limit(identifier);
+    return {
+      allowed: success,
+      retryAfterSeconds: success ? 0 : Math.max(0, Math.ceil((reset - Date.now()) / 1000)),
+    };
+  }
+
+  return checkInMemory(`${name}:${identifier}`, limit, windowMs);
 }
 
 export function getClientIp(request: Request): string {
