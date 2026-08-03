@@ -41,7 +41,7 @@ export function AiSuggestions({ resumeText, jobDescription, overallScore, topSug
 
   return (
     <div className="clay animate-fade-in-up rounded-2xl bg-card p-4">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <div className="clay-sm flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-card text-primary">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -58,7 +58,7 @@ export function AiSuggestions({ resumeText, jobDescription, overallScore, topSug
             type="button"
             onClick={fetchSuggestions}
             disabled={loading}
-            className="clay-primary shrink-0 cursor-pointer rounded-xl bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+            className="clay-primary shrink-0 cursor-pointer rounded-xl bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
           >
             {loading ? "Thinking…" : "Get AI Suggestions"}
           </button>
