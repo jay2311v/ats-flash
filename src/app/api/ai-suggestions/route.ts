@@ -61,8 +61,24 @@ function parseSuggestions(raw: string): string[] {
   }
 
   // The model didn't return valid JSON (e.g. an unescaped quote inside an
-  // example broke the array) — fall back to a line-based parse that strips
-  // JSON array punctuation instead of surfacing it as literal suggestions.
+  // example broke the array). That array is still on a single line, so a
+  // per-line parse would collapse the whole thing into one giant item —
+  // recover the individual items by splitting on the `","` boundary
+  // between array elements instead.
+  const arrayMatch = cleaned.match(/\[[\s\S]*\]/);
+  if (arrayMatch) {
+    const items = arrayMatch[0]
+      .slice(1, -1)
+      .split(/"\s*,\s*"/)
+      .map((item) => item.trim().replace(/^["']+/, "").replace(/["']+$/, "").trim())
+      .filter((item) => item.length > 0);
+    if (items.length > 1) {
+      return items;
+    }
+  }
+
+  // Fall back to a line-based parse that strips JSON array punctuation
+  // instead of surfacing it as literal suggestions.
   return cleaned
     .split("\n")
     .map((line) =>
