@@ -7,20 +7,97 @@ const BULLET_LINE_RE = /^\s*([•▪●◦‣∙\-*]|\d+[.)])\s+/;
 const NUMBER_RE = /(\$\s?\d|\d+\s?%|\b\d{1,3}(,\d{3})+\b|\b\d+(\.\d+)?[kKmMxX]\b|\b\d+\+\b)/;
 const REPLACEMENT_CHAR_RE = /[�-]/g;
 
+// Generous, substring-based detection used only for the "Standard Section
+// Headings" score — real resumes use many synonyms for the same concept
+// (e.g. "Academic Background" instead of "Education"), so this errs toward
+// recognizing a section rather than demanding one exact phrase.
 const SECTION_PATTERNS: { id: string; label: string; pattern: RegExp }[] = [
-  { id: "summary", label: "Summary / Objective", pattern: /\b(summary|objective|profile)\b/i },
+  { id: "summary", label: "Summary / Objective", pattern: /\b(summary|objective|profile|career goals)\b/i },
   {
     id: "experience",
     label: "Work Experience",
-    pattern: /\b(work experience|professional experience|employment history|experience)\b/i,
+    pattern: /\b(experience|employment|work history|career history)\b/i,
   },
-  { id: "education", label: "Education", pattern: /\beducation\b/i },
+  {
+    id: "education",
+    label: "Education",
+    pattern: /\b(education|academic background|academic history|educational qualifications)\b/i,
+  },
   {
     id: "skills",
     label: "Skills",
-    pattern: /\b(skills|technical skills|core competencies)\b/i,
+    pattern: /\b(skills|competenc(y|ies)|expertise|proficienc(y|ies)|tech stack)\b/i,
   },
 ];
+
+// Strips decorative wrapping some resumes style headers with (e.g.
+// "— EXPERIENCE —", "*** Skills ***", "|| Education ||") so the header text
+// underneath still matches cleanly.
+function normalizeHeaderLine(line: string): string {
+  return line
+    .replace(/^[\s\-–—=~*•◦▪●#|>]+/, "")
+    .replace(/[\s\-–—=~*•◦▪●#|<]+$/, "")
+    .trim();
+}
+
+// Up to a few generic modifier words before the header's core noun (e.g.
+// "Professional Experience", "Licenses & Certifications", "Relevant
+// Projects") — real resumes prefix the same handful of core section nouns
+// with all kinds of adjectives, so this generalizes instead of enumerating
+// every combination.
+const HEADER_MODIFIER = "(?:(?:[a-z]+|&)\\s+){0,4}";
+
+// Section headers where content is achievement/responsibility statements —
+// this is where action-verb and quantified-metric checks should apply.
+// Anchored to the whole line (after stripping decoration) so a bullet that
+// merely *mentions* "experience" mid-sentence isn't mistaken for a header.
+const VERB_SECTION_HEADER_RE = new RegExp(
+  "^(" +
+    HEADER_MODIFIER + "experience|" +
+    HEADER_MODIFIER + "history|" +
+    HEADER_MODIFIER + "(projects?|portfolio)|" +
+    HEADER_MODIFIER + "employment|" +
+    HEADER_MODIFIER + "volunteer(ing)?(\\s+(work|experience))?|" +
+    "internships?|career highlights|client work|case studies" +
+    ")\\s*:?$",
+  "i"
+);
+
+// Section headers where content is naturally noun/keyword-driven (skills,
+// tools, credentials, biography) rather than achievement statements —
+// bullets here shouldn't be judged for leading action verbs or metrics.
+// Every "core noun" group gets the same HEADER_MODIFIER prefix so real
+// modifiers ("Professional Profile", "Continuing Education") still match —
+// only genuinely fixed idioms (reversed word order, multi-word phrases with
+// no single trailing noun) are listed as flat literals.
+const NOUN_LIST_HEADER_RE = new RegExp(
+  "^(" +
+    HEADER_MODIFIER + "(skills|expertise|competenc(y|ies)|proficienc(y|ies)|qualifications)|" +
+    HEADER_MODIFIER + "(certifications?|certificates?|credentials?|licen(s|c)e(s|ure)?s?)|" +
+    HEADER_MODIFIER + "(training|coursework|workshops?)|" +
+    HEADER_MODIFIER + "(summary|objective|profile|goals)|" +
+    HEADER_MODIFIER + "education|" +
+    "objective statement|summary of qualifications|academic background|academic history|" +
+    "graduate studies|educational qualifications|" +
+    "languages?|language proficiency|multilingual skills|language fluency|" +
+    "interests?|hobbies|" +
+    "publications?|research (and|&) publications|published work|articles (and|&) papers|" +
+    "presentations?|public speaking|conference participation|" +
+    "professional memberships|industry associations|" +
+    "awards?((\\s+(and|&)\\s+)honou?rs?)?|honou?rs?|achievements?|recognitions?|" +
+    "references?|additional information|" +
+    "tech stack|tools (and|&) technologies|industry knowledge" +
+    ")\\s*:?$",
+  "i"
+);
+
+function classifySectionHeader(line: string): "verb" | "noun" | null {
+  const normalized = normalizeHeaderLine(line);
+  if (normalized.length === 0 || normalized.length > 60) return null;
+  if (VERB_SECTION_HEADER_RE.test(normalized)) return "verb";
+  if (NOUN_LIST_HEADER_RE.test(normalized)) return "noun";
+  return null;
+}
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -182,10 +259,41 @@ function scoreLength(text: string): CategoryResult {
   ]);
 }
 
-function scoreBullets(text: string): { category: CategoryResult; bulletLines: string[] } {
+function scoreBullets(text: string): { category: CategoryResult; achievementBulletLines: string[] } {
   const lines = nonEmptyLines(text);
-  const bulletLines = lines.filter((l) => BULLET_LINE_RE.test(l) || (l.length < 140 && /^[A-Z]/.test(l)));
-  const explicitBullets = lines.filter((l) => BULLET_LINE_RE.test(l));
+
+  // Walk the resume in order, tracking which kind of section we're in, so
+  // noun/keyword lists (Skills, Certifications, Education, ...) can be
+  // excluded from achievement-style checks (action verbs, metrics) further
+  // down — those checks only make sense for Experience/Projects bullets.
+  // Sections we don't recognize default to "included" so unusual headers
+  // don't silently drop real achievement content.
+  let currentSection: "verb" | "noun" | "unknown" = "unknown";
+  const explicitBullets: string[] = [];
+  const achievementBullets: string[] = [];
+  const fallbackLines: string[] = [];
+  const achievementFallbackLines: string[] = [];
+
+  for (const line of lines) {
+    const headerKind = classifySectionHeader(line);
+    if (headerKind) {
+      currentSection = headerKind;
+      continue;
+    }
+
+    const isBullet = BULLET_LINE_RE.test(line);
+    const isPseudoBullet = line.length < 140 && /^[A-Z]/.test(line);
+
+    if (isBullet) {
+      explicitBullets.push(line);
+      if (currentSection !== "noun") achievementBullets.push(line);
+    }
+    if (isBullet || isPseudoBullet) {
+      fallbackLines.push(line);
+      if (currentSection !== "noun") achievementFallbackLines.push(line);
+    }
+  }
+
   const ratio = lines.length > 0 ? explicitBullets.length / lines.length : 0;
 
   let points: number;
@@ -213,12 +321,15 @@ function scoreBullets(text: string): { category: CategoryResult; bulletLines: st
     { id: "bullet-ratio", label: "Bullet point structure", status, points, maxPoints: 10, detail, suggestion },
   ]);
 
-  return { category, bulletLines: explicitBullets.length > 0 ? explicitBullets : bulletLines };
+  const achievementBulletLines =
+    achievementBullets.length > 0 ? achievementBullets : achievementFallbackLines;
+
+  return { category, achievementBulletLines };
 }
 
-function scoreQuantifiedAchievements(bulletLines: string[]): CategoryResult {
-  const total = bulletLines.length;
-  const quantified = bulletLines.filter((l) => NUMBER_RE.test(l)).length;
+function scoreQuantifiedAchievements(achievementBulletLines: string[]): CategoryResult {
+  const total = achievementBulletLines.length;
+  const quantified = achievementBulletLines.filter((l) => NUMBER_RE.test(l)).length;
   const ratio = total > 0 ? quantified / total : 0;
   const points = clamp(Math.round(ratio / 0.4 * 15), 0, 15);
 
@@ -240,16 +351,16 @@ function scoreQuantifiedAchievements(bulletLines: string[]): CategoryResult {
       points,
       maxPoints: 15,
       detail: total > 0
-        ? `${quantified} of ${total} bullet points include a number or metric.`
-        : "No bullet points were detected to evaluate for metrics.",
+        ? `${quantified} of ${total} experience/project bullet points include a number or metric.`
+        : "No experience or project bullet points were detected to evaluate for metrics.",
       suggestion,
     },
   ]);
 }
 
-function scoreActionVerbs(bulletLines: string[]): CategoryResult {
-  const total = bulletLines.length;
-  const withVerb = bulletLines.filter((l) => {
+function scoreActionVerbs(achievementBulletLines: string[]): CategoryResult {
+  const total = achievementBulletLines.length;
+  const withVerb = achievementBulletLines.filter((l) => {
     const firstWord = l.replace(BULLET_LINE_RE, "").trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z]/g, "");
     return firstWord ? ACTION_VERB_SET.has(firstWord) : false;
   }).length;
@@ -274,8 +385,8 @@ function scoreActionVerbs(bulletLines: string[]): CategoryResult {
       points,
       maxPoints: 10,
       detail: total > 0
-        ? `${withVerb} of ${total} bullet points start with a strong action verb.`
-        : "No bullet points were detected to evaluate.",
+        ? `${withVerb} of ${total} experience/project bullet points start with a strong action verb.`
+        : "No experience or project bullet points were detected to evaluate.",
       suggestion,
     },
   ]);
@@ -325,7 +436,7 @@ export function scoreResumeText(text: string): {
   overallScore: number;
   grade: string;
 } {
-  const { category: bulletsCategory, bulletLines } = scoreBullets(text);
+  const { category: bulletsCategory, achievementBulletLines } = scoreBullets(text);
 
   const categories = [
     scoreParseability(text),
@@ -333,8 +444,8 @@ export function scoreResumeText(text: string): {
     scoreSections(text),
     scoreLength(text),
     bulletsCategory,
-    scoreQuantifiedAchievements(bulletLines),
-    scoreActionVerbs(bulletLines),
+    scoreQuantifiedAchievements(achievementBulletLines),
+    scoreActionVerbs(achievementBulletLines),
     scoreFormattingRedFlags(text),
   ];
 
