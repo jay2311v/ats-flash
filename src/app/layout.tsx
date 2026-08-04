@@ -98,6 +98,13 @@ const JSON_LD = {
     price: "0",
     priceCurrency: "USD",
   },
+  featureList: [
+    "Instant ATS resume score out of 100",
+    "8-category score breakdown with concrete suggestions",
+    "PDF and DOCX support",
+    "Job description keyword match scoring",
+    "AI-powered resume suggestions",
+  ],
 };
 
 export default function RootLayout({

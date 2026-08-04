@@ -8,6 +8,7 @@ import { CategoryList } from "@/components/CategoryList";
 import { JobMatchCard } from "@/components/JobMatchCard";
 import { AiSuggestions } from "@/components/AiSuggestions";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { SeoContent } from "@/components/SeoContent";
 import type { AnalysisResult } from "@/lib/types";
 import { MAX_FILE_BYTES } from "@/lib/constants";
 
@@ -177,6 +178,8 @@ export default function Home() {
           />
         </section>
       )}
+
+      <SeoContent />
 
       <footer className="mt-auto flex items-center justify-center gap-1.5 pt-4 text-center text-xs text-muted-foreground/70">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
